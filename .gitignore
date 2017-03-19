@@ -1,3 +1,9 @@
 ide_profiles/
 build/
 CMakeLists.txt
+*.o
+src/cmake_install.cmake
+src/CmakeCache.txt
+src/launch.json
+src/flags.make
+src/link.txt
