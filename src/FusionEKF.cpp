@@ -26,9 +26,9 @@ FusionEKF::FusionEKF() {
   TODO:
     * Finish initializing the FusionEKF.
   */
-  P_ = MatrixXd(4,4);
-  Q_ = MatrixXd(4,4);
-  x_ = VectorXd(4);
+  ekf_.P_ = MatrixXd(4,4);
+  ekf_.Q_ = MatrixXd(4,4);
+  ekf_.x_ = VectorXd(4);
   noise_ax = 5;
   noise_ay = 5;
 }
@@ -53,9 +53,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 0, 0, 0, 0;
-    ekf._P_ = 1, 0, 0, 0,
+    ekf_.P_ << 1, 0, 0, 0,
               0, 1, 0, 0,
-              0, 0, 1000, 0
+              0, 0, 1000, 0,
               0, 0, 0, 1000;
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /**
@@ -93,19 +93,17 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
      * Update the process noise covariance matrix.
    */
    float dt = (measurement_pack.timestamp_ - previous_timestamp_)/1000000.0;
-   ekf_.F_ = 1, 0, dt, 0,
+   ekf_.F_ << 1, 0, dt, 0,
              0, 1, 0, dt,
-             0, 0, 1, 0
+             0, 0, 1, 0,
              0, 0, 0, 1;
 
-    ekf_.Q_ <<  pow(dt, 4) / 4 * noise_ax, 0, pow(dt, 3) / 2 * noise_ax, 0,
-            0, pow(dt, 4) / 4 * noise_ay, 0, pow(dt, 3) / 2 * noise_ay,
-            pow(dt, 3) / 2 * noise_ax, 0, pow(dt, 2) * noise_ax, 0,
-            0, pow(dt, 3) / 2 * noise_ay, 0, pow(dt, 2) * noise_ay;
+  ekf_.Q_ <<  pow(dt, 4) / 4 * noise_ax, 0, pow(dt, 3) / 2 * noise_ax, 0,
+          0, pow(dt, 4) / 4 * noise_ay, 0, pow(dt, 3) / 2 * noise_ay,
+          pow(dt, 3) / 2 * noise_ax, 0, pow(dt, 2) * noise_ax, 0,
+          0, pow(dt, 3) / 2 * noise_ay, 0, pow(dt, 2) * noise_ay;
 
-    ekf_.Predict();
-
-    previous_timestamp_ = measurement_pack.timestamp_;
+  previous_timestamp_ = measurement_pack.timestamp_;
   ekf_.Predict();
 
   /*****************************************************************************
@@ -120,10 +118,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // Radar updates
-    
+    VectorXd z = VectorXd(3);
+    z << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], measurement_pack.raw_measurements_[2];    
     ekf_.UpdateEKF(z);
   } else {
     // Laser updates
+    VectorXd z = VectorXd(4);
+    z << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], measurement_pack.raw_measurements_[2], measurement_pack.raw_measurements_[3];    
     ekf_.Update(z);
   }
 
