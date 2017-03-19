@@ -43,7 +43,15 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     * update the state by using Extended Kalman Filter equations
   */
   MatrixXd Hj = tools.CalculateJacobian(this.x_);
-  MatrixXd y = z - Hj;
+  VectorXd hx = VectorXd(3);
+  float px = this.x_[0];
+  float py = this.x_[1];
+  float vx = this.x_[2];
+  float vy = this.x_[3];
+  hx << sqrt(pow(px,2)+pow(py,2)), 
+        atan2(py,px),
+        (px*vx+py*vy)/sqrt(pow(px,2)+pow(py,2));
+  MatrixXd y = z - hx;
   MatrixXd S = Hj* this.P_ * Hj.transpose() + this.R_;
   MatrixXd K = this.P_ * Hj.transpose() * S.inverse();
   MatrixXd I = MatrixXd::Identity(4,4);
