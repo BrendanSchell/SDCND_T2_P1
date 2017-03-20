@@ -40,8 +40,8 @@ FusionEKF::FusionEKF() {
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1;
-  noise_ax = 5;
-  noise_ay = 5;
+  nax2 = 8;
+  nay2 = 8;
 }
 
 /**
@@ -68,14 +68,14 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
               0, 1, 0, 0,
               0, 0, 1000, 0,
               0, 0, 0, 1000;
+    previous_timestamp_ = measurement_pack.timestamp_;
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /**
       Convert radar from polar to cartesian coordinates and initialize state.
       */
       float x_cart = measurement_pack.raw_measurements_[0] * cos(measurement_pack.raw_measurements_[1]);
       float y_cart = measurement_pack.raw_measurements_[0] * sin(measurement_pack.raw_measurements_[1]);
-
-      if (x_cart == 0 or y_cart == 0){
+    if (x_cart == 0 or y_cart == 0){
         return;
       }
 
@@ -108,11 +108,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
              0, 1, 0, dt,
              0, 0, 1, 0,
              0, 0, 0, 1;
-
-  ekf_.Q_ <<  pow(dt, 4) / 4 * noise_ax, 0, pow(dt, 3) / 2 * noise_ax, 0,
-          0, pow(dt, 4) / 4 * noise_ay, 0, pow(dt, 3) / 2 * noise_ay,
-          pow(dt, 3) / 2 * noise_ax, 0, pow(dt, 2) * noise_ax, 0,
-          0, pow(dt, 3) / 2 * noise_ay, 0, pow(dt, 2) * noise_ay;
+  float dt2 = pow(dt,2);
+  float dt3 = pow(dt,3)/2;
+  float dt4 = pow(dt,4)/4;
+  ekf_.Q_ <<  dt4 * nax2, 0, dt3 * nax2, 0,
+          0, dt4 * nay2, 0, dt3 * nay2,
+          dt3 * nax2, 0, dt2 * nax2, 0,
+          0, dt3 * nay2, 0, dt2 * nay2;
 
   previous_timestamp_ = measurement_pack.timestamp_;
   ekf_.Predict();

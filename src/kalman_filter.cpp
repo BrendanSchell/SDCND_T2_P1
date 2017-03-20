@@ -50,6 +50,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   float py = this->x_[1];
   float vx = this->x_[2];
   float vy = this->x_[3];
+  
   hx << sqrt(pow(px,2)+pow(py,2)), 
         atan2(py,px),
         (px*vx+py*vy)/sqrt(pow(px,2)+pow(py,2));
