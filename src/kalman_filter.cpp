@@ -17,17 +17,18 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
 
 void KalmanFilter::Predict() {
   /**
-  TODO:
-    * predict the state
+   Perform prediction step
   */
+  // predict new x value
   this->x_ = this->F_ * this->x_;
+
+  // predict new P matrix
   this->P_ = this->F_ * this->P_ * this->F_.transpose() + Q_;
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
   /**
-  TODO:
-    * update the state by using Kalman Filter equations
+    update the state by using Kalman Filter equations
   */
   MatrixXd z_pred = this->H_ * this->x_;
   MatrixXd y = z - z_pred ;
@@ -40,11 +41,15 @@ void KalmanFilter::Update(const VectorXd &z) {
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   /**
-  TODO:
-    * update the state by using Extended Kalman Filter equations
+     *update the state for radar measurements
+      using the Extended Kalman Filter equations
   */
   Tools tools;
+
+  // Calculate Jacobian matrix for the current x value
   MatrixXd Hj = tools.CalculateJacobian(this->x_);
+
+  // Initialize and calculate h(x) from current x value
   VectorXd hx = VectorXd(3);
   float px = this->x_[0];
   float py = this->x_[1];
@@ -54,6 +59,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   hx << sqrt(pow(px,2)+pow(py,2)), 
         atan2(py,px),
         (px*vx+py*vy)/sqrt(pow(px,2)+pow(py,2));
+
+  // Use Extended Kalman Filter equations to perform update
   MatrixXd y = z - hx;
   MatrixXd S = Hj* this->P_ * Hj.transpose() + this->R_;
   MatrixXd K = this->P_ * Hj.transpose() * S.inverse();

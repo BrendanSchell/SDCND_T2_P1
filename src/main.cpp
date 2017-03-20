@@ -91,6 +91,7 @@ int main(int argc, char* argv[]) {
       meas_package.raw_measurements_ << x, y;
       iss >> timestamp;
       meas_package.timestamp_ = timestamp;
+      // if x or y values are set to 0, skip this step
       if (fabs(x*x+y*y) < 0.001){
         skip = 1;
       }else{
@@ -107,13 +108,11 @@ int main(int argc, char* argv[]) {
       float ro_dot;
       iss >> ro;
       iss >> theta;
-      //if (fabs(ro*ro+theta*theta) < 0.001){
-        //skip = 1;
-      //}
       iss >> ro_dot;
       meas_package.raw_measurements_ << ro, theta, ro_dot;
       iss >> timestamp;
       meas_package.timestamp_ = timestamp;
+      // if x or y values are set to 0, skip this step
       if (!skip){
 
         measurement_pack_list.push_back(meas_package);
@@ -131,6 +130,7 @@ int main(int argc, char* argv[]) {
     iss >> vy_gt;
     gt_package.gt_values_ = VectorXd(4);
     gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
+    // if x or y values are set to 0, skip this step
     if (!skip){
       gt_pack_list.push_back(gt_package);
 

@@ -39,10 +39,14 @@ private:
 
   // tool object used to compute Jacobian and RMSE
   Tools tools;
+  // R matrices for laser and radar
   MatrixXd R_laser_;
   MatrixXd R_radar_;
+  // H matrices for laser and radar
   MatrixXd H_laser_;
   MatrixXd Hj_;
+  
+  //acceleration noise coefficients (squared)
   float nax2;
   float nay2;
 };
